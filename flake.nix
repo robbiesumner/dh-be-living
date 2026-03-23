@@ -43,7 +43,7 @@
           installPhase = ''
             runHook preInstall
             mkdir -p $out
-            cp -r build package.json node_modules $out/
+            cp -r build package.json node_modules drizzle $out/
             runHook postInstall
           '';
         });
