@@ -3,6 +3,8 @@ name: Build and Push to GHCR
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   build-and-push:
@@ -39,7 +41,23 @@ jobs:
       - name: Tag and Push
         run: |
           LOWER_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          GHCR_IMAGE="ghcr.io/$LOWER_OWNER/dh-be-living:latest"
+          IMAGE_BASE="ghcr.io/$LOWER_OWNER/dh-be-living"
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
 
-          docker tag dh-be-living:latest $GHCR_IMAGE
-          docker push $GHCR_IMAGE
+          docker tag dh-be-living:latest $IMAGE_BASE:sha-$SHORT_SHA
+          docker push $IMAGE_BASE:sha-$SHORT_SHA
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            docker tag dh-be-living:latest $IMAGE_BASE:pr-$PR_NUMBER
+            docker push $IMAGE_BASE:pr-$PR_NUMBER
+            echo "✅ Pushed PR image: $IMAGE_BASE:pr-$PR_NUMBER"
+            
+          else
+            docker tag dh-be-living:latest $IMAGE_BASE:main
+            docker push $IMAGE_BASE:main
+            
+            docker tag dh-be-living:latest $IMAGE_BASE:latest
+            docker push $IMAGE_BASE:latest
+            echo "✅ Pushed Main/Latest images"
+          fi
