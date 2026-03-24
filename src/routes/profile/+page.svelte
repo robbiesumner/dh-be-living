@@ -157,21 +157,64 @@
 						</select>
 					</div>
 
-					<div class="divider">Präferenzen</div>
+					{#if profile.role === 'tenant' || profile.role === 'both'}
+						<div class="form-control w-full">
+							<label class="label" for="dhbwLocation">
+								<span class="label-text font-semibold">DHBW Standort</span>
+							</label>
+							<input
+								type="text"
+								id="dhbwLocation"
+								name="dhbwLocation"
+								value={form?.dhbwLocation ?? profile.dhbwLocation}
+								placeholder="Karlsruhe"
+								class="input input-bordered w-full"
+							/>
+						</div>
 
-					<div class="form-control">
-						<label class="label cursor-pointer justify-start gap-4">
-							<input type="checkbox" class="toggle toggle-primary" checked />
-							<span class="label-text">Email Notifications</span>
-						</label>
-					</div>
+						<div class="form-control w-full">
+							<label class="label" for="dhbwCourse">
+								<span class="label-text font-semibold">DHBW Kurs</span>
+							</label>
+							<input
+								type="text"
+								id="dhbwCourse"
+								name="dhbwCourse"
+								value={form?.dhbwCourse ?? profile.dhbwCourse}
+								placeholder="WWI24B2"
+								class="input input-bordered w-full"
+							/>
+						</div>
 
-					<div class="form-control">
-						<label class="label cursor-pointer justify-start gap-4">
-							<input type="checkbox" class="toggle toggle-primary" checked />
-							<span class="label-text">Show profile to public</span>
-						</label>
-					</div>
+						<div class="form-control w-full">
+							<label class="label" for="workLocation">
+								<span class="label-text font-semibold">Standort Praxispartner</span>
+							</label>
+							<input
+								type="text"
+								id="workLocation"
+								name="workLocation"
+								value={form?.workLocation ?? profile.workLocation}
+								placeholder="Berlin"
+								class="input input-bordered w-full"
+							/>
+						</div>
+
+						<div class="divider">Präferenzen</div>
+
+						<div class="form-control">
+							<label class="label cursor-pointer justify-start gap-4">
+								<input
+									type="checkbox"
+									id="acceptWG"
+									name="acceptWG"
+									class="toggle toggle-primary"
+									checked={form?.acceptWG ?? profile.acceptWG}
+								/>
+								<span class="label-text font-semibold">WG-geeignet?</span>
+							</label>
+						</div>
+					{/if}
 
 					<div class="card-actions justify-end mt-4">
 						<button type="submit" class="btn btn-primary" disabled={isSaving}>

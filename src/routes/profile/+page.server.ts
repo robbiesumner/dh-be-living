@@ -33,9 +33,22 @@ export const actions: Actions = {
 		const name = formData.get('name') as string;
 		const phone = formData.get('phone') as string;
 		const role = formData.get('role') as 'tenant' | 'landlord' | 'both';
+		const dhbwLocation = formData.get('dhbwLocation') as string;
+		const workLocation = formData.get('workLocation') as string;
+		const dhbwCourse = formData.get('dhbwCourse') as string;
+		const acceptWG = formData.get('acceptWG') === 'on';
 
 		if (!name) {
-			return fail(400, { name, phone, role, message: 'Name is required' });
+			return fail(400, {
+				name,
+				phone,
+				role,
+				dhbwLocation,
+				workLocation,
+				dhbwCourse,
+				acceptWG,
+				message: 'Name is required'
+			});
 		}
 
 		try {
@@ -44,14 +57,27 @@ export const actions: Actions = {
 				.set({
 					name,
 					phone,
-					role
+					role,
+					dhbwLocation,
+					workLocation,
+					dhbwCourse,
+					acceptWG
 				})
 				.where(eq(profiles.id, 1));
 
 			return { success: true };
 		} catch (err) {
 			console.error('Failed to update profile:', err);
-			return fail(500, { name, phone, role, message: 'Could not update profile' });
+			return fail(500, {
+				name,
+				phone,
+				role,
+				dhbwLocation,
+				workLocation,
+				dhbwCourse,
+				acceptWG,
+				message: 'Could not update profile'
+			});
 		}
 	}
 };

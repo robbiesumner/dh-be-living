@@ -8,6 +8,10 @@ export const profiles = sqliteTable('profiles', {
 		.notNull()
 		.default('tenant'),
 	phone: text('phone'),
+	dhbwLocation: text('dhbw-location'),
+	workLocation: text('work-location'),
+	dhbwCourse: text('dhbw-course'),
+	acceptWG: integer('accept_wg', { mode: 'boolean' }).default(false),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date())
@@ -25,6 +29,7 @@ export const apartments = sqliteTable('apartments', {
 	rentPrice: real('rent_price').notNull(),
 	availableFrom: integer('available_from', { mode: 'timestamp' }).notNull(),
 	availableTo: integer('available_to', { mode: 'timestamp' }).notNull(),
+	isWG: integer('is-wg', { mode: 'boolean' }).notNull().default(false),
 	createdAt: integer('created_at', { mode: 'timestamp' })
 		.notNull()
 		.$defaultFn(() => new Date())

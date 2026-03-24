@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db';
-import { apartments } from '$lib/server/db/schema';
+import { apartments, requests } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { error, fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const apartmentId = Number(params.id);
@@ -21,4 +21,30 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		apartment
 	};
+};
+
+export const actions: Actions = {
+	request: async ({ params, request }) => {
+		const apartmentId = Number(params.id);
+		const formData = await request.formData();
+		const message = formData.get('message') as string;
+
+		if (!message) {
+			return fail(400, { message, error: 'Message is required' });
+		}
+
+		try {
+			await db.insert(requests).values({
+				tenantId: 1, // Static user ID for now
+				apartmentId,
+				message,
+				status: 'pending'
+			});
+
+			return { success: true };
+		} catch (err) {
+			console.error('Failed to create request:', err);
+			return fail(500, { message, error: 'Could not send request' });
+		}
+	}
 };
