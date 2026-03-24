@@ -1,13 +1,12 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
 
 	import { resolve } from '$app/paths';
 
 	let { children } = $props();
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head><link rel="icon" href="/dhbl-logo-192.png" /></svelte:head>
 <div class="mx-auto max-w-2xl p-4">
 	<div class="navbar mb-8 border-b-4 border-primary pb-4">
 		<h1 class="navbar-start">

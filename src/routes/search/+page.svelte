@@ -1,15 +1,8 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import SearchBar from '$lib/SearchBar.svelte';
+	import { formatDate } from '$lib/utils';
 	let { data } = $props();
-
-	const formatDate = (dateValue: number | Date) => {
-		return new Intl.DateTimeFormat('de-DE', {
-			day: '2-digit',
-			month: '2-digit',
-			year: '2-digit'
-		}).format(new Date(dateValue));
-	};
 </script>
 
 <div class="mb-8 flex flex-col items-center">

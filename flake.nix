@@ -78,6 +78,7 @@
               ]);
           in
             with pkgs; [
+              bashInteractive
               nodejs_20
               pnpm
               sqlite
