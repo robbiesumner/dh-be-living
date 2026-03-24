@@ -21,10 +21,13 @@ export const actions: Actions = {
 
 		// If no user exists, create one (auto-registration)
 		if (!user) {
-			const result = await db.insert(profiles).values({
-				name,
-				role: 'tenant'
-			}).returning();
+			const result = await db
+				.insert(profiles)
+				.values({
+					name,
+					role: 'tenant'
+				})
+				.returning();
 			user = result[0];
 		}
 

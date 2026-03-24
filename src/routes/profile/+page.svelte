@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ActionData, PageData } from './$types';
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 
 	let { data, form } = $props<{ data: PageData; form: ActionData }>();
 
@@ -8,6 +9,15 @@
 
 	let isSaving = $state(false);
 	let activeTab = $state('settings');
+
+	$effect(() => {
+		if (activeTab === 'listings' && profile.role === 'tenant') {
+			activeTab = 'settings';
+		}
+		if (activeTab === 'requests' && profile.role === 'landlord') {
+			activeTab = 'settings';
+		}
+	});
 </script>
 
 <div class="flex flex-col gap-6">
@@ -107,7 +117,7 @@
 						isSaving = true;
 						return async ({ update }) => {
 							isSaving = false;
-							update();
+							update({ reset: false });
 						};
 					}}
 					class="flex flex-col gap-4"
@@ -243,7 +253,9 @@
 									<h4 class="font-bold">{apartment.title}</h4>
 									<p class="text-xs opacity-60">{apartment.address}</p>
 								</div>
-								<a href="/apartment/{apartment.id}" class="btn btn-ghost btn-sm">Anschauen</a>
+								<a href={resolve(`/apartment/${apartment.id}`)} class="btn btn-ghost btn-sm"
+									>Anschauen</a
+								>
 							</div>
 						{/each}
 					{/if}
@@ -253,7 +265,7 @@
 					{#if profile.requests.length === 0}
 						<div class="text-center py-8 bg-base-200/30 rounded-lg">
 							<p class="text-base-content/50">Du hast noch keine Anfragen gemacht.</p>
-							<a href="/search" class="btn btn-ghost btn-sm mt-2">Wohnungen suchen</a>
+							<a href={resolve('/search')} class="btn btn-ghost btn-sm mt-2">Wohnungen suchen</a>
 						</div>
 					{:else}
 						{#each profile.requests as req (req.id)}
@@ -275,7 +287,9 @@
 										</span>
 									</p>
 								</div>
-								<a href="/apartment/{req.apartmentId}" class="btn btn-ghost btn-sm">Anschauen</a>
+								<a href={resolve(`/apartment/${req.apartmentId}`)} class="btn btn-ghost btn-sm"
+									>Anschauen</a
+								>
 							</div>
 						{/each}
 					{/if}
