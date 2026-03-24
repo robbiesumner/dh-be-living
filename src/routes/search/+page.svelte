@@ -41,7 +41,7 @@
 
 					<div class="flex flex-wrap items-center gap-4 text-sm">
 						<div>
-							{formatDate(listing.availableFrom)} - {formatDate(listing.availableTo)}
+							{listing.availableFrom.toLocaleDateString()} - {listing.availableTo.toLocaleDateString()}
 						</div>
 						<div>
 							€{listing.rentPrice}
