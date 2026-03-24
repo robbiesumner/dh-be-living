@@ -1,3 +1,7 @@
+/// <reference types="vite-plugin-pwa/client" />
+/// <reference types="vite-plugin-pwa/info" />
+/// <reference types="vite-plugin-pwa/pwa-assets" />
+
 import type { profiles } from '$lib/server/db/schema';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts

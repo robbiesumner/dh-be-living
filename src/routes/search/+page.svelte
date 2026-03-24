@@ -1,15 +1,23 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { resolve } from '$app/paths';
 	import SearchBar from '$lib/SearchBar.svelte';
-	import { formatDate } from '$lib/utils';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	let { data } = $props();
 
-	let filters = $state({
-		dhbwLocation: data.filters.dhbwLocation || '',
-		workLocation: data.filters.workLocation || '',
-		isWG: data.filters.isWG
+	let filters = $state(
+		untrack(() => ({
+			dhbwLocation: data.filters.dhbwLocation || '',
+			workLocation: data.filters.workLocation || '',
+			isWG: data.filters.isWG
+		}))
+	);
+
+	$effect(() => {
+		filters.dhbwLocation = data.filters.dhbwLocation || '';
+		filters.workLocation = data.filters.workLocation || '';
+		filters.isWG = data.filters.isWG;
 	});
 
 	function applyFilters() {
@@ -21,10 +29,13 @@
 		else url.searchParams.delete('workLocation');
 
 		url.searchParams.set('isWG', filters.isWG.toString());
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(url.toString(), { keepFocus: true });
 	}
 
-	const activeLocations = [data.filters.dhbwLocation, data.filters.workLocation].filter(Boolean);
+	let activeLocations = $derived(
+		[data.filters.dhbwLocation, data.filters.workLocation].filter(Boolean)
+	);
 </script>
 
 <div class="mb-8 flex flex-col items-center gap-4 w-full">

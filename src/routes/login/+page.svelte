@@ -42,9 +42,9 @@
 					class="input input-bordered"
 					required
 				/>
-				<label class="label">
+				<p class="label">
 					<span class="label-text-alt opacity-60">Jedes Passwort funktioniert zum Testen.</span>
-				</label>
+				</p>
 			</div>
 
 			<div class="form-control mt-6">
