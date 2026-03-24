@@ -22,8 +22,8 @@ profiles = []
 for _ in range(30):
     role = random.choices(['tenant', 'landlord', 'both'], weights=[60, 30, 10])[0]
     cursor.execute(
-        "INSERT INTO profiles (name, role, phone, created_at) VALUES (?, ?, ?, ?)",
-        (fake.name(), role, fake.phone_number(), now)
+        "INSERT INTO profiles (name, role, phone, \"dhbw-location\", \"work-location\", \"dhbw-course\", accept_wg, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (fake.name(), role, fake.phone_number(), "Karlsruhe", fake.city(), "WWI24B2", random.choice([0, 1]), now)
     )
     profiles.append((cursor.lastrowid, role))
 
@@ -50,8 +50,8 @@ for _ in range(50):
     cursor.execute(
         """
         INSERT INTO apartments 
-        (landlord_id, title, description, address, size, rent_price, available_from, available_to, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (landlord_id, title, description, address, size, rent_price, available_from, available_to, "is-wg", created_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             landlord_id,
@@ -62,6 +62,7 @@ for _ in range(50):
             random.randint(350, 650), # rent price
             get_timestamp(start_date),
             get_timestamp(end_date),
+            random.choice([0, 1]),
             now
         )
     )

@@ -1,0 +1,1 @@
+ALTER TABLE `apartments` ADD `is-wg` integer DEFAULT false NOT NULL;
