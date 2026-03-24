@@ -1,9 +1,9 @@
 <script lang="ts">
 	import './layout.css';
-
 	import { resolve } from '$app/paths';
 
-	let { children } = $props();
+	let { data, children } = $props();
+	const user = $derived(data.user);
 </script>
 
 <svelte:head><link rel="icon" href="/dhbl-logo-192.png" /></svelte:head>
@@ -18,15 +18,19 @@
 			</a>
 		</h1>
 		<div class="navbar-end gap-3">
-			<a href={resolve('/profile')} class="btn avatar btn-circle border border-base-300 btn-ghost">
-				<div class="w-10 rounded-full">
-					<img
-						class="text-transparent"
-						alt="User Avatar"
-						src="https://loremflickr.com/100/100/face?lock=4"
-					/>
-				</div>
-			</a>
+			{#if user}
+				<a href={resolve('/profile')} class="btn avatar btn-circle border border-base-300 btn-ghost" title={user.name}>
+					<div class="w-10 rounded-full">
+						<img
+							class="text-transparent"
+							alt="User Avatar"
+							src="https://loremflickr.com/100/100/face?lock={user.id}"
+						/>
+					</div>
+				</a>
+			{:else}
+				<a href={resolve('/login')} class="btn btn-ghost">Login</a>
+			{/if}
 		</div>
 	</div>
 

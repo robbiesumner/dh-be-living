@@ -14,7 +14,7 @@
 	<header class="flex items-center gap-6">
 		<div class="avatar online">
 			<div class="w-24 rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
-				<img src="https://loremflickr.com/200/200/face?lock=4" alt="User Avatar" />
+				<img src="https://loremflickr.com/200/200/face?lock={profile.id}" alt="User Avatar" />
 			</div>
 		</div>
 		<div>

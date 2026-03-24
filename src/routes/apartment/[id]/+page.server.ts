@@ -24,7 +24,11 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	request: async ({ params, request }) => {
+	request: async ({ params, request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { error: 'You must be logged in to send a request' });
+		}
+
 		const apartmentId = Number(params.id);
 		const formData = await request.formData();
 		const message = formData.get('message') as string;
@@ -35,7 +39,7 @@ export const actions: Actions = {
 
 		try {
 			await db.insert(requests).values({
-				tenantId: 1, // Static user ID for now
+				tenantId: locals.user.id,
 				apartmentId,
 				message,
 				status: 'pending'

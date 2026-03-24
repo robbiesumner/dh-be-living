@@ -3,19 +3,18 @@ import { apartments, profiles } from '$lib/server/db/schema';
 import { eq, like, or, and } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	const searchQuery = url.searchParams.get('q');
 	
-	// For now, we'll assume profile ID 1 as the current user
-	const profile = await db.query.profiles.findFirst({
-		where: eq(profiles.id, 1)
-	});
+	const profile = locals.user;
 
 	// Get manual filters or fallback to profile
 	const dhbwLocation = url.searchParams.get('dhbwLocation') ?? profile?.dhbwLocation;
 	const workLocation = url.searchParams.get('workLocation') ?? profile?.workLocation;
 	const isWGParam = url.searchParams.get('isWG');
-	const isWG = isWGParam !== null ? isWGParam === 'true' : (profile?.acceptWG ?? false);
+	
+	// Default to WG if no preference is set and user not logged in, otherwise use user's preference
+	const isWG = isWGParam !== null ? isWGParam === 'true' : (profile?.acceptWG ?? true);
 
 	let filters = [];
 
@@ -33,8 +32,10 @@ export const load: PageServerLoad = async ({ url }) => {
 		}
 	}
 
-	// Always apply WG filter if we have a preference or manual setting
-	filters.push(eq(apartments.isWG, isWG));
+	// Apply WG filter if explicitly set or if we have a preference
+	if (isWGParam !== null || profile) {
+		filters.push(eq(apartments.isWG, isWG));
+	}
 
 	const listings = await db
 		.select()

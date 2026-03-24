@@ -1,13 +1,16 @@
 import { db } from '$lib/server/db';
 import { profiles } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 
-export const load: PageServerLoad = async () => {
-	// For now, we'll assume profile ID 1 as the current user
+export const load: PageServerLoad = async ({ locals }) => {
+	if (!locals.user) {
+		throw redirect(303, '/login');
+	}
+
 	const profile = await db.query.profiles.findFirst({
-		where: eq(profiles.id, 1),
+		where: eq(profiles.id, locals.user.id),
 		with: {
 			apartments: true,
 			requests: {
@@ -28,7 +31,11 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
+		if (!locals.user) {
+			return fail(401, { message: 'Unauthorized' });
+		}
+
 		const formData = await request.formData();
 		const name = formData.get('name') as string;
 		const phone = formData.get('phone') as string;
@@ -63,7 +70,7 @@ export const actions: Actions = {
 					dhbwCourse,
 					acceptWG
 				})
-				.where(eq(profiles.id, 1));
+				.where(eq(profiles.id, locals.user.id));
 
 			return { success: true };
 		} catch (err) {
