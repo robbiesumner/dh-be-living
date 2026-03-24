@@ -86,6 +86,8 @@
             ];
 
           shellHook = ''
+            export SHELL=${pkgs.bashInteractive}/bin/bash
+
             echo "🏠 Welcome to the DH Be Living dev environment!"
             echo "Node: $(node --version)"
             echo "SQLite: $(sqlite3 --version | awk '{print $1}')"
