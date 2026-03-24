@@ -54,7 +54,9 @@
 					{apartment.address}
 				</p>
 			</div>
-			<div class="text-3xl font-bold text-primary">€{apartment.rentPrice} <span class="text-sm font-normal text-base-content/60">/ Monat</span></div>
+			<div class="text-3xl font-bold text-primary">
+				€{apartment.rentPrice} <span class="text-sm font-normal text-base-content/60">/ Monat</span>
+			</div>
 		</div>
 	</div>
 
@@ -95,13 +97,17 @@
 					<div class="flex items-center gap-4">
 						<div class="avatar">
 							<div class="w-16 rounded-full">
-								<img src="https://loremflickr.com/200/200/face?lock={apartment.landlordId}" alt="Landlord" />
+								<img
+									src="https://loremflickr.com/200/200/face?lock={apartment.landlordId}"
+									alt="Landlord"
+								/>
 							</div>
 						</div>
 						<div>
 							<div class="font-bold text-xl">{apartment.landlord.name}</div>
 							<div class="text-sm opacity-60">
-								{apartment.landlord.role} • {apartment.landlord.dhbwLocation || 'Kein Standort angegeben'}
+								{apartment.landlord.role} • {apartment.landlord.dhbwLocation ||
+									'Kein Standort angegeben'}
 							</div>
 						</div>
 					</div>
@@ -134,9 +140,7 @@
 								></textarea>
 							</div>
 
-							<button type="submit" class="btn btn-primary btn-block">
-								Anfrage abschicken
-							</button>
+							<button type="submit" class="btn btn-primary btn-block"> Anfrage abschicken </button>
 
 							<p class="text-xs text-center text-base-content/50 px-4">
 								Wir benachrichtigen den Vermieter sofort über deine Nachricht.
