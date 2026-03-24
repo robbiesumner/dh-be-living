@@ -286,11 +286,14 @@
 
 	<div class="card bg-base-200/50 border border-base-300">
 		<div class="card-body">
-			<h3 class="card-title text-sm opacity-70">Account löschen</h3>
+			<h3 class="card-title text-sm opacity-70">Account-Verwaltung</h3>
 			<p class="text-xs opacity-60">
-				Wenn du deinen Account löscht, kann er nicht wiederhergestellt werden.
+				Hier kannst du dich abmelden oder deinen Account dauerhaft löschen.
 			</p>
-			<div class="card-actions justify-start mt-2">
+			<div class="card-actions justify-start mt-2 gap-2">
+				<form method="POST" action="/logout">
+					<button class="btn btn-outline btn-sm">Abmelden</button>
+				</form>
 				<button class="btn btn-outline btn-error btn-sm" disabled>Account löschen</button>
 			</div>
 		</div>
