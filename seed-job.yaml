@@ -1,0 +1,135 @@
+# ai generated
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sqlite-seed-script
+data:
+  seed.py: |
+    import sqlite3
+    import random
+    from datetime import datetime, timedelta
+
+    # --- Configuration ---
+    # This path matches the mountPath in the Job below
+    DB_PATH = "/data/prod.db" 
+
+    NUM_PROFILES = 30
+    NUM_APARTMENTS = 30
+    NUM_REQUESTS = 40
+
+    FIRST_NAMES = ["Lukas", "Leon", "Finn", "Paul", "Jonas", "Lena", "Mia", "Hannah", "Emma", "Sofia", "Tim", "Jan"]
+    LAST_NAMES = ["Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Hoffmann"]
+    DHBW_LOCATIONS = ["Karlsruhe", "Stuttgart", "Mannheim", "Heilbronn", "Ravensburg", "Heidenheim"]
+    DHBW_COURSES = ["Wirtschaftsinformatik", "Angewandte Informatik", "Maschinenbau", "BWL-Industrie", "Elektrotechnik"]
+    COMPANIES = ["SAP", "Bosch", "Siemens", "Porsche", "Mercedes-Benz", "EnBW", "IBM"]
+    STREETS = ["Hauptstraße", "Schlossplatz", "Kaiserstraße", "Waldweg", "Bahnhofstraße", "Lindenallee"]
+
+    def get_ms_timestamp(days_offset=0):
+        dt = datetime.now() + timedelta(days=days_offset)
+        return int(dt.timestamp() * 1000)
+
+    def seed():
+        print(f"🔌 Connecting to database at {DB_PATH}...")
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        print("🌱 Seeding profiles...")
+        profiles = []
+        for _ in range(NUM_PROFILES):
+            name = f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}"
+            role = random.choices(['tenant', 'landlord', 'both'], weights=[0.6, 0.2, 0.2])[0]
+            phone = f"+49 151 {random.randint(1000000, 9999999)}"
+            dhbw_loc = random.choice(DHBW_LOCATIONS) if role != 'landlord' else None
+            work_loc = random.choice(COMPANIES) if role != 'landlord' else None
+            course = random.choice(DHBW_COURSES) if role != 'landlord' else None
+            accept_wg = 1 if random.random() > 0.4 else 0
+            created_at = get_ms_timestamp(random.randint(-100, 0))
+
+            cursor.execute("""
+                INSERT INTO profiles (name, role, phone, "dhbw-location", "work-location", "dhbw-course", accept_wg, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (name, role, phone, dhbw_loc, work_loc, course, accept_wg, created_at))
+            profiles.append((cursor.lastrowid, role))
+        print(f"✅ {NUM_PROFILES} profiles inserted.")
+
+        print("🌱 Seeding apartments...")
+        apartments = []
+        landlord_ids = [p[0] for p in profiles if p[1] in ['landlord', 'both']]
+        
+        for _ in range(NUM_APARTMENTS):
+            landlord_id = random.choice(landlord_ids)
+            is_wg = 1 if random.random() > 0.4 else 0
+            city = random.choice(DHBW_LOCATIONS)
+            typ = "WG-Zimmer" if is_wg else "Wohnung"
+            title = f"Schöne{ 's' if is_wg else '' } {typ} in {city}"
+            description = f"Helle Räume und perfekte Lage für Studenten der DHBW {city}."
+            address = f"{random.choice(STREETS)} {random.randint(1, 150)}, {city}"
+            size = random.randint(12, 35) if is_wg else random.randint(30, 80)
+            rent_price = round(random.uniform(300.0, 550.0) if is_wg else random.uniform(500.0, 1100.0), 2)
+            available_from = get_ms_timestamp(random.randint(-10, 30))
+            available_to = get_ms_timestamp(random.randint(90, 365))
+            created_at = get_ms_timestamp(random.randint(-30, 0))
+
+            cursor.execute("""
+                INSERT INTO apartments (landlord_id, title, description, address, size, rent_price, available_from, available_to, "is-wg", created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (landlord_id, title, description, address, size, rent_price, available_from, available_to, is_wg, created_at))
+            apartments.append(cursor.lastrowid)
+        print(f"✅ {NUM_APARTMENTS} apartments inserted.")
+
+        print("🌱 Seeding requests...")
+        tenant_ids = [p[0] for p in profiles if p[1] in ['tenant', 'both']]
+        statuses = ['pending', 'accepted', 'rejected']
+        messages = [
+            "Hallo! Ich suche noch dringend ein Zimmer für das nächste Semester.",
+            "Hi, ich starte mein Studium bald und würde mich über eine Besichtigung freuen.",
+            "Guten Tag, ist das Zimmer noch verfügbar? Bin bei einem Partnerunternehmen in der Nähe."
+        ]
+
+        for _ in range(NUM_REQUESTS):
+            tenant_id = random.choice(tenant_ids)
+            apartment_id = random.choice(apartments)
+            status = random.choices(statuses, weights=[0.6, 0.2, 0.2])[0]
+            message = random.choice(messages)
+            created_at = get_ms_timestamp(random.randint(-15, 0))
+
+            cursor.execute("""
+                INSERT INTO requests (tenant_id, apartment_id, status, message, created_at)
+                VALUES (?, ?, ?, ?, ?)
+            """, (tenant_id, apartment_id, status, message, created_at))
+        print(f"✅ {NUM_REQUESTS} requests inserted.")
+
+        conn.commit()
+        conn.close()
+        print("🎉 Database successfully seeded!")
+
+    if __name__ == "__main__":
+        seed()
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sqlite-seed-job
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+        - name: seeder
+          image: python:3.13-alpine # Standard, lightweight Python image
+          command: ["python", "/script/seed.py"]
+          volumeMounts:
+            - name: db-pvc
+              mountPath: /data # Where your DB gets mounted inside this container
+            - name: script-volume
+              mountPath: /script # Where the ConfigMap gets mounted
+      restartPolicy: Never
+      volumes:
+        - name: db-pvc
+          persistentVolumeClaim:
+            claimName: dh-be-living-data
+        - name: script-volume
+          configMap:
+            name: sqlite-seed-script
