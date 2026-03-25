@@ -220,25 +220,9 @@
 								</div>
 
 								{#if request.status === 'pending'}
-									<div class="flex gap-3 justify-end mt-2 pt-4 border-t border-base-200">
-										<form method="POST" action="?/rejectRequest" use:enhance>
-											<input type="hidden" name="requestId" value={request.id} />
-											<button class="btn btn-sm btn-outline btn-error rounded-xl">Ablehnen</button>
-										</form>
-										<form method="POST" action="?/acceptRequest" use:enhance>
-											<input type="hidden" name="requestId" value={request.id} />
-											<button class="btn btn-sm btn-success text-white rounded-xl">Annehmen</button>
-										</form>
-									</div>
+									<div class="badge badge-warning font-semibold">Offen</div>
 								{:else if request.status === 'accepted'}
-									<div class="flex justify-end mt-2 pt-4 border-t border-base-200">
-										<a
-											href={resolve(`/apartment/${apartment.id}/contract/${request.id}`)}
-											class="btn btn-sm btn-primary rounded-xl"
-										>
-											Mietvertrag erstellen
-										</a>
-									</div>
+									<div class="badge badge-success font-semibold text-white">Angenommen</div>
 								{:else if request.status === 'rejected'}
 									<div class="badge badge-error font-semibold text-white">Abgelehnt</div>
 								{/if}
@@ -265,6 +249,15 @@
 										<input type="hidden" name="requestId" value={request.id} />
 										<button class="btn btn-sm btn-success text-white rounded-xl">Annehmen</button>
 									</form>
+								</div>
+							{:else if request.status === 'accepted'}
+								<div class="flex justify-end mt-2 pt-4 border-t border-base-200">
+									<a
+										href={resolve(`/apartment/${apartment.id}/contract/${request.id}`)}
+										class="btn btn-sm btn-primary rounded-xl"
+									>
+										Mietvertrag erstellen
+									</a>
 								</div>
 							{/if}
 						</div>
