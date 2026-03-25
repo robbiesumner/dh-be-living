@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { formatDate } from '$lib/utils';
 	import { enhance } from '$app/forms';
-	import type { ActionData, PageData } from './$types';
+	import { resolve } from '$app/paths';
+	import type { PageProps } from './$types';
 
-	let { data, form } = $props<{ data: PageData; form: ActionData }>();
-	const { apartment } = $derived(data);
+	let { data, form }: PageProps = $props();
+	const { apartment, profile } = $derived(data);
+
+	const userRequest = $derived(
+		profile ? apartment.requests.find((r) => r.tenantId === profile.id) : null
+	);
 </script>
 
 <div class="max-w-4xl mx-auto space-y-8">
@@ -119,36 +124,153 @@
 		<div class="space-y-4">
 			<div class="card bg-base-100 border border-base-200 shadow-lg sticky top-8">
 				<div class="card-body">
-					<h2 class="card-title text-xl mb-4">Anfrage senden</h2>
+					{#if profile?.id === apartment.landlordId}
+						<h2 class="card-title text-xl mb-2">Deine Anzeige</h2>
+						<p class="text-sm text-base-content/70">
+							Du bist der Anbieter dieser Wohnung. Scrolle nach unten, um deine eingehenden Anfragen
+							zu verwalten.
+						</p>
+					{:else if userRequest}
+						<h2 class="card-title text-xl mb-4">Deine Anfrage</h2>
 
-					{#if form?.success}
-						<div class="alert alert-success shadow-sm mb-4">
-							<span>Deine Anfrage wurde erfolgreich gesendet!</span>
+						<div class="flex items-center justify-between mb-6 bg-base-200/50 p-4 rounded-2xl">
+							<span class="font-medium text-sm">Aktueller Status:</span>
+							{#if userRequest.status === 'pending'}
+								<div class="badge badge-warning font-semibold">In Bearbeitung</div>
+							{:else if userRequest.status === 'accepted'}
+								<div class="badge badge-success font-semibold text-white">Angenommen!</div>
+							{:else if userRequest.status === 'rejected'}
+								<div class="badge badge-error font-semibold text-white">Abgelehnt</div>
+							{/if}
 						</div>
-					{:else}
-						<form method="POST" action="?/request" use:enhance class="space-y-4">
-							<div class="form-control">
-								<label class="label" for="message">
-									<span class="label-text">Nachricht</span>
-								</label>
-								<textarea
-									id="message"
-									name="message"
-									class="textarea textarea-bordered h-32"
-									placeholder="Stell dich kurz vor und sag, warum du einziehen möchtest..."
-									required
-								></textarea>
+
+						<div class="space-y-2">
+							<h3 class="text-xs font-bold text-base-content/60 uppercase tracking-wider pl-1">
+								Deine Nachricht
+							</h3>
+							<div class="bg-base-200 rounded-2xl p-4">
+								<p class="whitespace-pre-wrap text-sm leading-relaxed">{userRequest.message}</p>
 							</div>
+						</div>
 
-							<button type="submit" class="btn btn-primary btn-block"> Anfrage abschicken </button>
+						<p class="text-xs text-center text-base-content/50 mt-4">
+							Gesendet am {formatDate(userRequest.createdAt)}
+						</p>
+					{:else}
+						<h2 class="card-title text-xl mb-4">Anfrage senden</h2>
 
-							<p class="text-xs text-center text-base-content/50 px-4">
-								Wir benachrichtigen den Vermieter sofort über deine Nachricht.
-							</p>
-						</form>
+						{#if form?.success}
+							<div class="alert alert-success shadow-sm mb-4">
+								<span>Deine Anfrage wurde erfolgreich gesendet!</span>
+							</div>
+						{:else}
+							<form method="POST" action="?/request" use:enhance class="space-y-4">
+								<div class="form-control">
+									<label class="label" for="message">
+										<span class="label-text">Nachricht</span>
+									</label>
+									<textarea
+										id="message"
+										name="message"
+										class="textarea textarea-bordered h-32 rounded-2xl"
+										placeholder="Stell dich kurz vor und sag, warum du einziehen möchtest..."
+										required
+									></textarea>
+								</div>
+
+								<button type="submit" class="btn btn-primary btn-block rounded-xl">
+									Anfrage abschicken
+								</button>
+
+								<p class="text-xs text-center text-base-content/50 px-4">
+									Wir benachrichtigen den Vermieter sofort über deine Nachricht.
+								</p>
+							</form>
+						{/if}
 					{/if}
 				</div>
 			</div>
 		</div>
 	</div>
+	{#if profile}
+		{#if profile.id === apartment.landlord.id}
+			<div class="card bg-base-100 border border-primary shadow-sm">
+				<div class="card-body">
+					<h2 class="card-title text-2xl mb-2">Deine Anfragen</h2>
+					{#each apartment.requests as request (request.id)}
+						<div
+							class="border border-base-200 rounded-3xl p-5 mb-6 last:mb-0 bg-base-50 shadow-sm flex flex-col gap-5"
+						>
+							<div class="flex justify-between items-start gap-4">
+								<div class="flex items-center gap-4">
+									<div class="avatar">
+										<div class="w-12 h-12 rounded-full bg-base-300">
+											<img
+												src="https://loremflickr.com/150/150/face?lock={request.tenant.id}"
+												alt={request.tenant.name}
+											/>
+										</div>
+									</div>
+									<div>
+										<h3 class="font-bold text-lg">{request.tenant.name}</h3>
+										<p class="text-xs text-base-content/60">
+											Anfrage vom {formatDate(request.createdAt)}
+										</p>
+									</div>
+								</div>
+
+								{#if request.status === 'pending'}
+									<div class="flex gap-3 justify-end mt-2 pt-4 border-t border-base-200">
+										<form method="POST" action="?/rejectRequest" use:enhance>
+											<input type="hidden" name="requestId" value={request.id} />
+											<button class="btn btn-sm btn-outline btn-error rounded-xl">Ablehnen</button>
+										</form>
+										<form method="POST" action="?/acceptRequest" use:enhance>
+											<input type="hidden" name="requestId" value={request.id} />
+											<button class="btn btn-sm btn-success text-white rounded-xl">Annehmen</button>
+										</form>
+									</div>
+								{:else if request.status === 'accepted'}
+									<div class="flex justify-end mt-2 pt-4 border-t border-base-200">
+										<a
+											href={resolve(`/apartment/${apartment.id}/contract/${request.id}`)}
+											class="btn btn-sm btn-primary rounded-xl"
+										>
+											Mietvertrag erstellen
+										</a>
+									</div>
+								{:else if request.status === 'rejected'}
+									<div class="badge badge-error font-semibold text-white">Abgelehnt</div>
+								{/if}
+							</div>
+
+							<div>
+								<h4
+									class="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider pl-1"
+								>
+									Nachricht
+								</h4>
+								<div class="bg-base-200 rounded-2xl p-4">
+									<p class="whitespace-pre-wrap text-sm leading-relaxed">{request.message}</p>
+								</div>
+							</div>
+
+							{#if request.status === 'pending'}
+								<div class="flex gap-3 justify-end mt-2 pt-4 border-t border-base-200">
+									<form method="POST" action="?/rejectRequest" use:enhance>
+										<input type="hidden" name="requestId" value={request.id} />
+										<button class="btn btn-sm btn-outline btn-error rounded-xl">Ablehnen</button>
+									</form>
+									<form method="POST" action="?/acceptRequest" use:enhance>
+										<input type="hidden" name="requestId" value={request.id} />
+										<button class="btn btn-sm btn-success text-white rounded-xl">Annehmen</button>
+									</form>
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
+	{/if}
 </div>
